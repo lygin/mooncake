@@ -1,6 +1,7 @@
 #include "ha/leadership/leader_coordinator_factory.h"
 
 #include "ha/leadership/backends/etcd/etcd_leader_coordinator.h"
+#include "ha/leadership/backends/file/file_leader_coordinator.h"
 #include "ha/leadership/backends/redis/redis_leader_coordinator.h"
 #ifdef STORE_USE_K8S_LEASE
 #include "ha/leadership/backends/k8s/k8s_leader_coordinator.h"
@@ -44,6 +45,15 @@ CreateLeaderCoordinator(const HABackendSpec& spec) {
 #else
             return tl::make_unexpected(ErrorCode::UNAVAILABLE_IN_CURRENT_MODE);
 #endif
+        }
+        case HABackendType::FILE: {
+            auto coordinator =
+                std::make_unique<backends::file::FileLeaderCoordinator>(spec);
+            auto err = coordinator->Connect();
+            if (err != ErrorCode::OK) {
+                return tl::make_unexpected(err);
+            }
+            return std::unique_ptr<LeaderCoordinator>(std::move(coordinator));
         }
     }
 

@@ -66,6 +66,7 @@ set(MOONCAKE_STORE_MASTER_SOURCES
     storage/distributed/kvcs/kvcs_capacity_provider.cpp
     ha/leadership/leader_coordinator_factory.cpp
     ha/leadership/backends/etcd/etcd_leader_coordinator.cpp
+    ha/leadership/backends/file/file_leader_coordinator.cpp
     ha/common/redis/redis_connection.cpp
     ha/leadership/backends/redis/redis_leader_coordinator.cpp
     ha/leadership/master_service_supervisor.cpp

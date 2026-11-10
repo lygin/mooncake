@@ -41,6 +41,7 @@ tl::expected<std::shared_ptr<HaKvBackend>, ErrorCode> CreateHaKvBackend(
         }
         case ha::HABackendType::UNKNOWN:
         case ha::HABackendType::K8S:
+        case ha::HABackendType::FILE:
             return tl::make_unexpected(ErrorCode::INVALID_PARAMS);
     }
     return tl::make_unexpected(ErrorCode::INVALID_PARAMS);

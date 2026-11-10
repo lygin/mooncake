@@ -22,6 +22,9 @@ enum class HABackendType {
     ETCD = 1,
     REDIS = 2,
     K8S = 3,
+    // Client-only: the leader address is read from a local file that an
+    // external elector keeps up to date. A master never campaigns on it.
+    FILE = 4,
 };
 
 inline std::string HABackendTypeToString(HABackendType type) {
@@ -34,6 +37,8 @@ inline std::string HABackendTypeToString(HABackendType type) {
             return "redis";
         case HABackendType::K8S:
             return "k8s";
+        case HABackendType::FILE:
+            return "file";
     }
     return "unknown";
 }
@@ -45,6 +50,22 @@ inline bool HaBackendSupportsOpLog(HABackendType type) {
             return true;
         case HABackendType::UNKNOWN:
         case HABackendType::K8S:
+        case HABackendType::FILE:
+            return false;
+    }
+    return false;
+}
+
+// Whether a master can run an election on this backend. FILE only lets
+// clients discover a leader elected elsewhere.
+inline bool HaBackendSupportsElection(HABackendType type) {
+    switch (type) {
+        case HABackendType::ETCD:
+        case HABackendType::REDIS:
+        case HABackendType::K8S:
+            return true;
+        case HABackendType::UNKNOWN:
+        case HABackendType::FILE:
             return false;
     }
     return false;
@@ -59,6 +80,9 @@ inline std::optional<HABackendType> ParseHABackendType(std::string_view type) {
     }
     if (type == "k8s") {
         return HABackendType::K8S;
+    }
+    if (type == "file") {
+        return HABackendType::FILE;
     }
     return std::nullopt;
 }
@@ -90,6 +114,8 @@ inline ErrorCode ValidateHABackendAvailability(HABackendType type) {
 #else
             return ErrorCode::UNAVAILABLE_IN_CURRENT_MODE;
 #endif
+        case HABackendType::FILE:
+            return ErrorCode::OK;
     }
 
     return ErrorCode::INVALID_PARAMS;

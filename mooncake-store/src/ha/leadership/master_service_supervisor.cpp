@@ -76,6 +76,11 @@ tl::expected<HABackendSpec, ErrorCode> BuildHABackendSpec(
     if (availability != ErrorCode::OK) {
         return tl::make_unexpected(availability);
     }
+    if (!HaBackendSupportsElection(backend_type.value())) {
+        LOG(ERROR) << "ha_backend_type=" << config.ha_backend_type
+                   << " is client-only, a master cannot campaign on it";
+        return tl::make_unexpected(ErrorCode::INVALID_PARAMS);
+    }
 
     auto connstring = ResolveHABackendConnstring(config);
     if (connstring.empty()) {

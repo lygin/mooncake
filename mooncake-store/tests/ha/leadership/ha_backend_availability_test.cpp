@@ -45,6 +45,14 @@ TEST(HABackendAvailabilityTest, K8sAvailabilityMatchesBuildFlag) {
 #endif
 }
 
+TEST(HABackendAvailabilityTest, FileIsAlwaysAvailableButClientOnly) {
+    EXPECT_EQ(ErrorCode::OK,
+              ValidateHABackendAvailability(HABackendType::FILE));
+    EXPECT_FALSE(HaBackendSupportsElection(HABackendType::FILE));
+    EXPECT_FALSE(HaBackendSupportsOpLog(HABackendType::FILE));
+    EXPECT_EQ("file", HABackendTypeToString(HABackendType::FILE));
+}
+
 TEST(HABackendAvailabilityTest, ClientSpecParsingMatchesK8sBuildFlag) {
     auto spec = ParseHABackendSpec("k8s://default/master");
 #ifdef STORE_USE_K8S_LEASE
